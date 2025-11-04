@@ -13,6 +13,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   // Apply token to axios defaults and attempt to fetch current user when token exists
   useEffect(() => {
+    // Set axios base URL from environment (Vite) if provided so deployed frontend
+    // can talk to a separate backend host. If VITE_API_URL is unset, axios
+    // will use relative URLs (same origin).
+  const apiBase = (import.meta as unknown as { env?: Record<string, string> }).env?.VITE_API_URL;
+    if (apiBase) axios.defaults.baseURL = apiBase;
+
     const applyTokenAndFetch = async () => {
       if (!token) return;
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
@@ -35,7 +41,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   useEffect(() => {
     if (!token || !user) return;
 
-    const s = io('http://localhost:3000', { auth: { token }, transports: ['websocket'] });
+    // Determine socket URL: if VITE_API_URL is set, strip trailing /api to get socket host
+    const apiBase = (import.meta as unknown as { env?: Record<string, string> }).env?.VITE_API_URL;
+    const socketUrl = apiBase ? apiBase.replace(/\/(?:api)?\/?$/, '') : 'http://localhost:3000';
+
+    const s = io(socketUrl, { auth: { token }, transports: ['websocket'] });
     s.on('connect', () => {
       console.log('socket connected', s.id);
     });
