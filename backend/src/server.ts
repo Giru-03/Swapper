@@ -62,9 +62,14 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   });
 });
 
-// 404 handler
+// Respond to CORS preflight requests for any route (helps serverless environments)
+app.options('*', cors());
+
+// 404 handler - log and return JSON so deployed functions clearly show missing routes
 app.use((req: Request, res: Response) => {
-  res.status(404).json({ error: 'Not found' });
+  const path = req.originalUrl || req.url;
+  console.warn(`No route matched for ${req.method} ${path}`);
+  res.status(404).json({ error: 'Not found', path });
 });
 
 // Only start the long-running HTTP + Socket.IO server when this file is
@@ -138,7 +143,7 @@ if (require.main === module) {
   });
 }
 
-app.get("/", (req, res) => {
+app.get("", (req, res) => {
   res.send("API is running successfully! 👍");
 });
 
