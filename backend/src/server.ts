@@ -24,6 +24,23 @@ app.use(cors({
 
 app.use(express.json());
 
+// Ensure CORS headers are present on all responses and handle OPTIONS early.
+// Some serverless platforms or proxies may not forward preflight correctly, so
+// this explicit middleware helps guarantee the browser receives the expected
+// Access-Control-Allow-* headers.
+app.use((req: any, res: any, next: any) => {
+  const origin = req.get('origin') || req.get('referer') || '*';
+  res.setHeader('Access-Control-Allow-Origin', origin);
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS,PATCH');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization');
+  if (req.method === 'OPTIONS') {
+    // short-circuit preflight
+    return res.status(200).end();
+  }
+  next();
+});
+
 // Request logging middleware
 app.use((req: Request, res: Response, next: NextFunction) => {
   console.log(`${req.method} ${req.path}`);
