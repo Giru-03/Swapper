@@ -12,10 +12,13 @@ const PORT = process.env.PORT || 3000;
 const app = express();
 
 // CORS configuration (allows local dev + deployed frontend)
+// Use a permissive CORS policy that echoes the request origin. This is
+// convenient for debugging across Vercel deployments (preview URLs, etc.).
+// For production lock this down to a fixed allowlist.
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:3000', 'http://127.0.0.1:5173', 'https://swapper-drab.vercel.app', 'https://swapper-api.vercel.app'],
+  origin: true, // echo back request origin
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
@@ -46,6 +49,25 @@ app.post('/api/debug/emit', (req: any, res: any) => {
     console.error('Debug emit error', err);
     return res.status(500).json({ error: 'Failed to emit' });
   }
+});
+
+// Debug echo endpoint: returns request metadata for troubleshooting CORS and routing.
+app.all('/api/debug/echo', (req: any, res: any) => {
+  const origin = req.get('origin') || req.get('referer') || null;
+  // Ensure CORS headers are present on the response
+  if (origin) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization');
+  }
+  res.json({
+    method: req.method,
+    path: req.originalUrl || req.url,
+    origin,
+    headers: req.headers,
+    body: req.body,
+  });
 });
 
 // Health check endpoint

@@ -16,8 +16,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     // Set axios base URL from environment (Vite) if provided so deployed frontend
     // can talk to a separate backend host. If VITE_API_URL is unset, axios
     // will use relative URLs (same origin).
-  const apiBase = (import.meta as unknown as { env?: Record<string, string> }).env?.VITE_API_URL;
-    if (apiBase) axios.defaults.baseURL = apiBase;
+    const rawApi = (import.meta as unknown as { env?: Record<string, string> }).env?.VITE_API_URL;
+    if (rawApi) {
+      // Normalize: strip trailing slashes and any trailing '/api' so requests that
+      // use '/api/...' on the client resolve to '<origin>/api/...'. This avoids
+      // accidental '/api/api/...' duplication when VITE_API_URL already contains '/api'.
+      const normalized = rawApi.replace(/\/+$/g, '').replace(/\/api$/i, '');
+      axios.defaults.baseURL = normalized;
+    }
 
     const applyTokenAndFetch = async () => {
       if (!token) return;
@@ -41,9 +47,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   useEffect(() => {
     if (!token || !user) return;
 
-    // Determine socket URL: if VITE_API_URL is set, strip trailing /api to get socket host
-    const apiBase = (import.meta as unknown as { env?: Record<string, string> }).env?.VITE_API_URL;
-    const socketUrl = apiBase ? apiBase.replace(/\/(?:api)?\/?$/, '') : 'http://localhost:3000';
+    // Determine socket URL: derive host from VITE_API_URL (strip trailing '/api' if present)
+    const rawApi = (import.meta as unknown as { env?: Record<string, string> }).env?.VITE_API_URL;
+    const socketUrl = rawApi
+      ? rawApi.replace(/\/+$/g, '').replace(/\/api$/i, '')
+      : 'http://localhost:3000';
 
     const s = io(socketUrl, { auth: { token }, transports: ['websocket'] });
     s.on('connect', () => {
