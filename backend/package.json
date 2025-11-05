@@ -1,8 +1,14 @@
 {
   "name": "slotswapper-backend",
   "version": "1.0.0",
+  "engines": {
+    "node": "18.x",
+    "npm": "9.x"
+  },
   "scripts": {
-    "start": "ts-node src/server.ts",
+    "start": "node dist/server.js",
+    "build": "tsc",
+    "dev": "ts-node src/server.ts",
     "test": "jest"
   },
   "dependencies": {
@@ -12,8 +18,8 @@
     "express": "^4.18.2",
     "jsonwebtoken": "^9.0.2",
     "pg": "^8.16.3",
-    "serverless-http": "^4.0.0",
-    "socket.io": "^4.8.1"
+    "socket.io": "^4.8.1",
+    "typescript": "^5.2.2"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
