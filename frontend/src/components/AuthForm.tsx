@@ -47,6 +47,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSubmit, isSignup }) => {
                 onChange={e => setName(e.target.value)}
                 placeholder="Your full name"
                 required={isSignup}
+                autoComplete="name"
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
               />
             </div>
@@ -60,6 +61,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSubmit, isSignup }) => {
               onChange={e => setEmail(e.target.value)}
               placeholder="you@example.com"
               required
+              autoComplete="email"
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
             />
           </div>
@@ -72,6 +74,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSubmit, isSignup }) => {
               onChange={e => setPassword(e.target.value)}
               placeholder="••••••••"
               required
+              autoComplete={isSignup ? "new-password" : "current-password"}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
             />
           </div>
