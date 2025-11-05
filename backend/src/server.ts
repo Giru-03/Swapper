@@ -47,6 +47,15 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   next();
 });
 
+// Root endpoint - must be defined before other routes to work properly
+app.get('/', (req: Request, res: Response) => {
+  res.json({ 
+    status: 'ok', 
+    message: 'Swapper API is running successfully! 👍',
+    timestamp: new Date().toISOString() 
+  });
+});
+
 app.use('/api/auth', authRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api', swapRoutes);  // Swaps under /api for simplicity
@@ -181,9 +190,5 @@ if (require.main === module) {
     process.exit(1);
   });
 }
-
-app.get("", (req, res) => {
-  res.send("API is running successfully! 👍");
-});
 
 export default app;
